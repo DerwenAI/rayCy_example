@@ -24,7 +24,6 @@ namespace raycy {
   public:
     int x;
 
-    Foo ();
     Foo (int x);
     ~Foo ();
   };
@@ -39,10 +38,7 @@ The `libraycy.cpp` C++ source file:
 
 using namespace raycy;
 
-// default constructor
-Foo::Foo () {}
-
-// overloaded constructor
+// constructor
 Foo::Foo (int x) {
   this->x = x;
 }

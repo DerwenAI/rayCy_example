@@ -6,7 +6,6 @@ namespace raycy {
   public:
     int x;
 
-    Foo ();
     Foo (int x);
     ~Foo ();
   };

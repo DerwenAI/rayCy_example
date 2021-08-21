@@ -2,10 +2,7 @@
 
 using namespace raycy;
 
-// default constructor
-Foo::Foo () {}
-
-// overloaded constructor
+// constructor
 Foo::Foo (int x) {
   this->x = x;
 }
