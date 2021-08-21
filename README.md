@@ -3,10 +3,10 @@
 Demo / test harness for a code conflict in the use of Ray actors with
 Cython-based classes.
 
----
-## Requirements
 
-A solution must compile and run on Ubuntu Linux using a makefile with:
+## Dependencies
+
+A solution must compile (with `make`) and run on Ubuntu Linux with:
 
   * g++ 9.3+
   * Cython 0.29+
@@ -14,11 +14,14 @@ A solution must compile and run on Ubuntu Linux using a makefile with:
   * Ray 1.5.2+
 
 
-## Error Description
+## Description
 
 The `libraycy.hpp` C++ header file:
 
 ```
+#ifndef LIBRAYCY_HPP
+#define LIBRAYCY_HPP
+
 namespace raycy {
   class Foo {
   public:
@@ -28,6 +31,8 @@ namespace raycy {
     ~Foo ();
   };
 }
+
+#endif
 ```
 
 
@@ -70,11 +75,25 @@ The `test.py` Python source file used for testing:
 import ray
 import rayCy
 
+
 @ray.remote
 class Foo (rayCy.CyFoo):
-    def test_method ():
-        print("hello")
+    def __init__ (self, x:int):
+        print(x)
+
+
+if __name__ == "__main__":
+    ray.init(ignore_reinit_error=True)
+
+    #f = Foo(1)
+    f = Foo.remote(1)
+
+    print(f)
+    print(type(f))
+
+    ray.shutdown()
 ```
+
 
 ## Error
 

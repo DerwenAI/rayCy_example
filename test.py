@@ -4,14 +4,16 @@ import rayCy
 
 @ray.remote
 class Foo (rayCy.CyFoo):
-    def test_method ():
-        print("hello")
+    def __init__ (self, x:int):
+        print(x)
 
 
 if __name__ == "__main__":
     ray.init(ignore_reinit_error=True)
 
-    f = Foo.remote()
+    #f = Foo(1)
+    f = Foo.remote(1)
+
     print(f)
     print(type(f))
 
