@@ -16,8 +16,8 @@ default: rayCy.so
 rayCy.so: rayCy.pyx libraycy.o
 #	python setup.py build_ext --inplace
 	cython --cplus $<
-	$(CC) $(CY_FLAGS) $(CY_INCL) -c $(*F).cpp -o $@
-	$(CC) $(CY_FLAGS) $(CY_LIBS) -shared racCy.o librarcy.o -o $@
+	$(CC) $(CY_FLAGS) $(CY_INCL) -c rayCy.cpp -o rayCy.o
+	$(CC) $(CY_FLAGS) $(CY_LIBS) -shared rayCy.o libraycy.o -o $@
 
 libraycy.o: libraycy.cpp libraycy.hpp
 	$(CC) $(CY_FLAGS) $(CY_INCL) -c $< -o $@

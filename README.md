@@ -6,8 +6,12 @@ Cython-based classes.
 ---
 ## Requirements
 
-A solution must compile and run on C++ NN on Linux NN using a
-makefile, with Python 3.7+ and Ray 1.5+
+A solution must compile and run on Ubuntu Linux using a makefile with:
+
+  * g++ 9.3+
+  * Cython 0.29+
+  * Python 3.8+
+  * Ray 1.5.2+
 
 
 ## Error Description
@@ -76,12 +80,14 @@ class Foo (rayCy.CyFoo):
         print("hello")
 ```
 
+## Error
 
 Then the error traceback is:
 
 ```
+python test.py
 Traceback (most recent call last):
-  File "test.py", line 8, in <module>
+  File "test.py", line 6, in <module>
     class Foo (rayCy.CyFoo):
   File "/home/paco/anaconda3/lib/python3.8/site-packages/ray/worker.py", line 1990, in remote
     return make_decorator(worker=worker)(args[0])
@@ -91,7 +97,8 @@ Traceback (most recent call last):
     return ActorClass._ray_from_modified_class(
   File "/home/paco/anaconda3/lib/python3.8/site-packages/ray/actor.py", line 383, in _ray_from_modified_class
     self = DerivedActorClass.__new__(DerivedActorClass)
-  File "rayCy.pyx", line 26, in rayCy.CyFoo.__cinit__
+  File "rayCy.pyx", line 9, in rayCy.CyFoo.__cinit__
     def __cinit__ (self, int x):
 TypeError: __cinit__() takes exactly 1 positional argument (0 given)
+make: *** [makefile:14: default] Error 1
 ```
