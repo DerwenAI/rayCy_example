@@ -48,6 +48,8 @@ to [@astrophysaxist](https://github.com/astrophysaxist):
   * <https://stackoverflow.com/questions/57928257/cython-class-initialization-in-ray>
   * <https://github.com/astrophysaxist/cython_test>
 
+> this may probably arise from an unspoken Ray rule. It seems it's not acceptable to have Cython classes with positional arguments in their __init__
+
 Note that those other "answers" on StackOverflow (including one of the
 Ray committers) really missed the point.
 
