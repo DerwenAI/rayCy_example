@@ -11,7 +11,9 @@ GEN = rayCy.cpp
 
 
 default: rayCy.so
-	python test.py
+	mypy test.py
+	pylint test.py
+	pytest test.py
 
 rayCy.so: rayCy.pyx libraycy.o
 #	python setup.py build_ext --inplace

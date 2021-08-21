@@ -1,119 +1,72 @@
-# rayCy_bug
+# rayCy_example
 
-Demo / test harness for a code conflict in the use of Ray actors with
-Cython-based classes.
-
-
-## Dependencies
-
-A solution must compile (with `make`) and run on Ubuntu Linux with:
-
-  * g++ 9.3+
-  * Cython 0.29+
-  * Python 3.8+
-  * Ray 1.5.2+
+Demo / test harness for resolving a code conflict in the use of
+Cython-based Python classes as Ray actors.
 
 
-## Description
+## Background
 
-The `libraycy.hpp` C++ header file:
+Here's what the Cython docs provide as example of wrapping a C++
+object in Python:
 
-```
-#ifndef LIBRAYCY_HPP
-#define LIBRAYCY_HPP
+  * <https://cython.readthedocs.io/en/latest/src/userguide/wrapping_CPlusPlus.html>
 
-namespace raycy {
-  class Foo {
-  public:
-    int x;
+Getting that example to run is a bit of a challenge, especially when
+your use case uses argument types other than simple integers:
 
-    Foo (int x);
-    ~Foo ();
-  };
-}
+  * <https://stackoverflow.com/questions/29168575/wrap-c-class-with-cython-getting-the-basic-example-to-work>
 
-#endif
-```
+Using the `@ray.remote` decorator on Python classes provides a way to
+define *remote classes*, i.e., to implement *actor pattern* in Python
+for distributed applications:
 
+  * <https://github.com/DerwenAI/ray_tutorial>
 
-The `libraycy.cpp` C++ source file:
+The documentation for Ray has some limited discussion about Cython
+integration, which describe the use of *remote function* but not about
+using *remote classes*:
 
-```
-#include "libraycy.hpp"
+  * <https://docs.ray.io/en/stable/example-cython.html>
 
-using namespace raycy;
-
-// constructor
-Foo::Foo (int x) {
-  this->x = x;
-}
-
-// destructor
-Foo::~Foo () {}
-```
+Throughout much of the history of the [Ray Project](https:://ray.io/)
+portions of its documentation have been wildly out of sync with the
+code releases.  In general, larger production use cases for Ray do not
+use the latest releases, and unfortunately people do not trust the
+documentation.  However, notably since Ray Summit 2021 this situation
+has begun to improve.
 
 
-The `rayCy.pyx` Cython extension file:
+To illustrate the central issue here, if you use Cython extensions as
+base classes in Python and then attempt to use Ray decorators on those
+Python subclasses, Ray will throw exceptions about the constructors:
 
-```
-cdef extern from "libraycy.hpp" namespace "raycy":
-    cdef cppclass Foo:
-        Foo (int) except +
-        int x
+  * <https://discuss.ray.io/t/errors-using-ray-remote-decorator-on-a-python-subclass-from-a-cython-wrapper/3303>
 
-cdef class CyFoo:
-    cdef Foo *cpp_obj
+This code conflict has been explored in more detail, with many thanks
+to [@astrophysaxist](https://github.com/astrophysaxist):
 
-    def __cinit__ (self, int x):
-        self.cpp_obj = new Foo(x)
-```
+  * <https://stackoverflow.com/questions/57928257/cython-class-initialization-in-ray>
+  * <https://github.com/astrophysaxist/cython_test>
 
-
-The `test.py` Python source file used for testing:
-
-```
-import ray
-import rayCy
+Note that those other "answers" on StackOverflow (including one of the
+Ray committers) really missed the point.
 
 
-@ray.remote
-class Foo (rayCy.CyFoo):
-    def __init__ (self, x:int):
-        print(x)
+This repo shows a working example of how integrate Cython and Ray
+usage, albeit with the understanding that this is specifically not
+supported by Ray.
 
 
-if __name__ == "__main__":
-    ray.init(ignore_reinit_error=True)
+## Evaluation
 
-    #f = Foo(1)
-    f = Foo.remote(1)
+Note that this example uses `make` to compile the C++ and then invokes
+command line Cython to handle the build.
+This is in lieu of using `setup.py` due to other external requirements
+for building the target use case.
 
-    print(f)
-    print(type(f))
+Run this example code via:
 
-    ray.shutdown()
-```
+  1. `pip install -r requirements.txt`
+  2. `make`
 
-
-## Error
-
-Then the error traceback is:
-
-```
-python test.py
-Traceback (most recent call last):
-  File "test.py", line 6, in <module>
-    class Foo (rayCy.CyFoo):
-  File "/home/paco/anaconda3/lib/python3.8/site-packages/ray/worker.py", line 1990, in remote
-    return make_decorator(worker=worker)(args[0])
-  File "/home/paco/anaconda3/lib/python3.8/site-packages/ray/worker.py", line 1868, in decorator
-    return ray.actor.make_actor(function_or_class, num_cpus, num_gpus,
-  File "/home/paco/anaconda3/lib/python3.8/site-packages/ray/actor.py", line 1069, in make_actor
-    return ActorClass._ray_from_modified_class(
-  File "/home/paco/anaconda3/lib/python3.8/site-packages/ray/actor.py", line 383, in _ray_from_modified_class
-    self = DerivedActorClass.__new__(DerivedActorClass)
-  File "rayCy.pyx", line 9, in rayCy.CyFoo.__cinit__
-    def __cinit__ (self, int x):
-TypeError: __cinit__() takes exactly 1 positional argument (0 given)
-make: *** [makefile:14: default] Error 1
-```
+Pytest will report whether it ran successfully.
